@@ -51,7 +51,7 @@ class Poseidon(PayloadType):
             required=False,
         ),
     ]
-    c2_profiles = ["websocket", "http", "poseidon_tcp"]
+    c2_profiles = ["websocket", "http", "poseidon_tcp", "lark"]
 
     async def build(self) -> BuildResponse:
         macOSVersion = "10.12"
@@ -94,10 +94,13 @@ class Poseidon(PayloadType):
                 else:
                     if val:
                         ldflags += f" -X '{poseidon_repo_profile}.{key}={val}'"
-
-            ldflags += " -X '{}.proxy_bypass={}'".format(
-                poseidon_repo_profile, self.get_parameter("proxy_bypass")
-            )
+            
+            # Not incorporated into Lark yet - To Do:
+            if profile != "lark":
+                ldflags += " -X '{}.proxy_bypass={}'".format(
+                    poseidon_repo_profile, self.get_parameter("proxy_bypass")
+                )
+        
             # Set the Go -buildid argument to an empty string to remove the indicator
             ldflags += " -buildid="
             goarch = "amd64"
