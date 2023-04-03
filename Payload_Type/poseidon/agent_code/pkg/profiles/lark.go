@@ -409,7 +409,7 @@ func (c *C2Default) htmlPostData(sendData []byte) []byte {
 			} else {
 				// Message parsed properly, add SMILE reaction so server can delete the file
 				//fmt.Printf("response: %v\n", enc_raw)
-				_, err := c.add_reaction(base_url, token, msg_id, "SMILE")
+				_, err = c.add_reaction(base_url, token, msg_id, "SMILE")
 				if err != nil {
 					//fmt.Println(err)
 					continue
@@ -419,7 +419,7 @@ func (c *C2Default) htmlPostData(sendData []byte) []byte {
 		} else {
 			// Message parsed properly, add SMILE reaction so server can delete the file
 			//fmt.Printf("response: %v\n", raw[36:])
-			_, err := c.add_reaction(base_url, token, msg_id, "SMILE")
+			_, err = c.add_reaction(base_url, token, msg_id, "SMILE")
 			if err != nil {
 				//fmt.Println(err)
 				continue
