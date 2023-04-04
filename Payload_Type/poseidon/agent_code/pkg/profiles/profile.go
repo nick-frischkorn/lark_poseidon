@@ -418,7 +418,7 @@ func GetFile(getFileFromMythic structs.GetFileFromMythicStruct) {
 	// when we're done fetching the file, send a 0 byte length byte array to the getFileFromMythic.ReceivedChunkChannel
 	fileUploadData := structs.FileUploadMessage{}
 	fileUploadData.FileID = getFileFromMythic.FileID
-	fileUploadData.ChunkSize = 512000
+	fileUploadData.ChunkSize = 2048000
 	fileUploadData.ChunkNum = 1
 	fileUploadData.FullPath = getFileFromMythic.FullPath
 
